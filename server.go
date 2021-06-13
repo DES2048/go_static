@@ -50,9 +50,11 @@ type Server struct {
 
 func NewServer(config *ServerConfig) (*Server, error) {
 	e := echo.New()
+	e.HideBanner = true
 
-	e.Use(middleware.Logger())
-
+	e.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{
+		Format: "${time_rfc3339} method=${method}, uri=${uri}, status=${status}, error=${error}\n",
+	}))
 	e.GET("/", func(c echo.Context) error {
 		videos, err := ListMp4(config.StaticFolder)
 
