@@ -1,9 +1,9 @@
 .PHONY: android
 android:
-	GOOS=android GOARCH=arm64 go build -o go_static_android
+	GOOS=android GOARCH=arm64 go build go_static\cmd\mp4server   
 
-.PHONY: linux
-linux:
-	go build
+.PHONY: build
+build:
+	go build go_static\cmd\mp4server
 
-.DEFAULT_GOAL := linux
+.DEFAULT_GOAL := build

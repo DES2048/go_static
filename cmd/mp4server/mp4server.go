@@ -2,41 +2,11 @@ package main
 
 import (
 	"embed"
+	"go_static/internal/mp4server"
 	"html/template"
 	"log"
 	"os"
-	"path/filepath"
 )
-
-func ListMp4(path string) ([]os.FileInfo, error) {
-	absPath, err := filepath.Abs(path)
-
-	if err != nil {
-		return nil, err
-	}
-
-	globPath := filepath.Join(absPath, "*.mp4")
-
-	paths, err := filepath.Glob(globPath)
-
-	if err != nil {
-		return nil, err
-	}
-
-	infos := make([]os.FileInfo, 0, len(paths))
-
-	// gather file info's
-	for _, path := range paths {
-		info, err := os.Lstat(path)
-		if err != nil {
-			return nil, err
-		}
-
-		infos = append(infos, info)
-	}
-
-	return infos, nil
-}
 
 //go:embed templates
 var fs embed.FS
@@ -79,10 +49,11 @@ func main() {
 		log.Fatal(err)
 	}
 
-	config := DefaultServerConfig()
+	config := mp4server.DefaultServerConfig()
 	config.StaticFolder = os.Args[1]
+	config.ListTemplate = ListTemplate
 
-	server, err := NewServer(config)
+	server, err := mp4server.NewServer(config)
 
 	if err != nil {
 		log.Fatal(err)
