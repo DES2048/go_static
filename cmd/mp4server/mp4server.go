@@ -50,10 +50,11 @@ func main() {
 	}
 
 	config := mp4server.DefaultServerConfig()
+	config.Addr = "127.0.0.1:8500"
 	config.StaticFolder = os.Args[1]
 	config.ListTemplate = ListTemplate
 
-	server, err := mp4server.NewEchoServer(config)
+	server, err := mp4server.NewMuxServer(config)
 
 	if err != nil {
 		log.Fatal(err)
