@@ -1,6 +1,7 @@
-package main
+package mp4server
 
 import (
+	"html/template"
 	"net/http"
 	"net/url"
 	"os"
@@ -17,6 +18,7 @@ type ServerConfig struct {
 	Addr         string
 	StaticPath   string
 	StaticFolder string
+	ListTemplate *template.Template
 }
 
 func DefaultServerConfig() *ServerConfig {
@@ -52,10 +54,11 @@ func NewServer(config *ServerConfig) (*Server, error) {
 		)
 
 		type Video struct {
-			Url   string
-			Title string
-			Size  string
-			Time  string
+			Url      string
+			Title    string
+			Size     string
+			Time     string
+			Duration string
 		}
 
 		videosTmpl := make([]Video, 0, len(videos))
@@ -63,10 +66,11 @@ func NewServer(config *ServerConfig) (*Server, error) {
 		for _, v := range videos {
 			videosTmpl = append(videosTmpl,
 				Video{
-					Url:   path.Join(config.StaticPath, v.Name()),
-					Title: v.Name(),
-					Size:  humanize.Bytes(uint64(v.Size())),
-					Time:  humanize.Time(v.ModTime()),
+					Url:      path.Join(config.StaticPath, v.Name()),
+					Title:    v.Name(),
+					Size:     humanize.Bytes(uint64(v.Size())),
+					Time:     humanize.Time(v.ModTime()),
+					Duration: v.Duration.String(),
 				},
 			)
 		}
@@ -77,7 +81,7 @@ func NewServer(config *ServerConfig) (*Server, error) {
 			Videos: videosTmpl,
 		}
 
-		err = ListTemplate.Execute(c.Response(), data)
+		err = config.ListTemplate.Execute(c.Response(), data)
 		if err != nil {
 			return err
 		}

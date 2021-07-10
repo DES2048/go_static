@@ -1,8 +1,6 @@
-package main
+package mp4server
 
-import "os"
-
-type Mp4ByModTime []os.FileInfo
+type Mp4ByModTime []FileInfo
 
 func (m Mp4ByModTime) Len() int           { return len(m) }
 func (m Mp4ByModTime) Swap(i, j int)      { m[i], m[j] = m[j], m[i] }

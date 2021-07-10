@@ -42,7 +42,7 @@
             <li>
 				<button id="delButton" onclick="deleteVideo(this.dataset.id);" data-id="{{.Title}}">x</button>
 				<a href="{{.Url}}">
-					{{.Title}}<span class="size-badge">{{.Size}}</span>{{.Time}}
+					{{.Title}}<span class="size-badge">{{.Duration}}</span>{{.Time}}
 				</a>
 			</li>
         {{end}}
