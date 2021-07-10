@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>List videos</title>
+	<style>
+		ul {
+			list-style-type: none;
+			margin: 0;
+			padding-left: 5px;
+		}
+
+		li {
+			margin: 5px auto;
+		}
+
+		#delButton {
+			margin-right: 5px;
+			color: white;
+			background-color: red;
+		}
+
+		a {
+			text-decoration: none;
+		}
+		.size-badge {
+			border: 1px solid transparent;
+			border-radius: 5px;
+			margin: 0 5px;
+			padding: 0 5px;
+			color: white;
+			background-color: grey;
+		}
+	</style>
+</head>
+<body>
+    <h2>Videos</h2>
+    <ul>
+        {{range .Videos}}
+            <li>
+				<button id="delButton" onclick="deleteVideo(this.dataset.id);" data-id="{{.Title}}">x</button>
+				<a href="{{.Url}}">
+					{{.Title}}<span class="size-badge">{{.Size}}</span>{{.Time}}
+				</a>
+			</li>
+        {{end}}
+    </ul>
+	<script>
+		async function deleteVideo(id) {
+			const resp = await fetch("/d/" + id, {
+				method: "DELETE",
+			});
+
+			if (!resp.ok) {
+				const data = await resp.json;
+				console.log(data.message);
+			} else {
+				document.location.reload();
+			}
+		}
+	</script> 
+</body>
+</html>
