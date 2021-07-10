@@ -53,7 +53,7 @@ func main() {
 	config.StaticFolder = os.Args[1]
 	config.ListTemplate = ListTemplate
 
-	server, err := mp4server.NewServer(config)
+	server, err := mp4server.NewEchoServer(config)
 
 	if err != nil {
 		log.Fatal(err)
