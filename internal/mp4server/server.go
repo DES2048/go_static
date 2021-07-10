@@ -18,14 +18,6 @@ func DefaultServerConfig() *ServerConfig {
 	}
 }
 
-type VideoData struct {
-	Url      string
-	Title    string
-	Size     string
-	Time     string
-	Duration string
-}
-
 type Server interface {
 	Start() error
 }
