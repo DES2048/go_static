@@ -1,34 +1,17 @@
 package main
 
 import (
+	"net/http"
+	"net/url"
+	"os"
 	"path"
 	"path/filepath"
+	"sort"
 
+	"github.com/dustin/go-humanize"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 )
-
-var listTmpl string = `
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>List videos</title>
-</head>
-<body>
-    <h2>Videos</h2>
-    <ul>
-        {{range .Videos}}
-            <li>
-				<a href="{{.Url}}">{{.Title}}</a>
-			</li>
-        {{end}}
-    </ul> 
-</body>
-</html>
-`
 
 type ServerConfig struct {
 	Addr         string
@@ -55,25 +38,35 @@ func NewServer(config *ServerConfig) (*Server, error) {
 	e.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{
 		Format: "${time_rfc3339} method=${method}, uri=${uri}, status=${status}, error=${error}\n",
 	}))
+
 	e.GET("/", func(c echo.Context) error {
 		videos, err := ListMp4(config.StaticFolder)
 
 		if err != nil {
 			return err
 		}
+
+		// sort by modTime
+		sort.Sort(
+			sort.Reverse(Mp4ByModTime(videos)),
+		)
+
 		type Video struct {
 			Url   string
 			Title string
+			Size  string
+			Time  string
 		}
 
 		videosTmpl := make([]Video, 0, len(videos))
 
 		for _, v := range videos {
-			name := filepath.Base(v)
 			videosTmpl = append(videosTmpl,
 				Video{
-					Url:   path.Join(config.StaticPath, name),
-					Title: name,
+					Url:   path.Join(config.StaticPath, v.Name()),
+					Title: v.Name(),
+					Size:  humanize.Bytes(uint64(v.Size())),
+					Time:  humanize.Time(v.ModTime()),
 				},
 			)
 		}
@@ -90,6 +83,25 @@ func NewServer(config *ServerConfig) (*Server, error) {
 		}
 
 		return nil
+	})
+
+	e.DELETE("/d/:file", func(c echo.Context) error {
+		filePar, err := url.PathUnescape(c.Param("file"))
+
+		if err != nil {
+			return echo.NewHTTPError(
+				http.StatusBadRequest,
+				"invalid path parameter",
+			)
+		}
+
+		delPath := filepath.Join(config.StaticFolder, filePar)
+
+		if err := os.Remove(delPath); err != nil {
+			return err
+		}
+
+		return c.NoContent(http.StatusNoContent)
 	})
 
 	e.Static("/videos", config.StaticFolder)
